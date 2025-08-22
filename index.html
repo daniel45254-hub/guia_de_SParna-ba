@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Create and manage a community database of local businesses</title>
+
+  <style>
+    body { font-family: Arial, sans-serif; margin:20px; background:#f9f9f9; color:#333; }
+h1,h2 { text-align:center; }
+.container { max-width:800px; margin:auto; padding:20px; background:white; border-radius:10px; box-shadow:0 4px 8px rgba(0,0,0,0.1); }
+input,button { padding:10px; margin:5px 0; width:100%; border:1px solid #ccc; border-radius:6px; }
+.result { padding:10px; margin:10px 0; border:1px solid #ddd; border-radius:6px; background:#f1f1f1; }
+.admin-section { margin-top:30px; padding:20px; border-top:2px dashed #ccc; }
+#resultados iframe { width:100%; height:300px; border:none; margin-top:10px; }
+
+  </style>
+
+  
+</head>
+<body>
+  <div class="container">
+  <h1>📍 Guia de Santana de Parnaíba</h1>
+  <p>Encontre comércios e serviços no seu bairro</p>
+
+  <!-- Busca -->
+  <input type="text" id="bairroBusca" placeholder="Digite o bairro">
+  <button onclick="buscar()">Buscar</button>
+
+  <div id="resultados"></div>
+
+  <!-- Login Admin -->
+  <div class="admin-login">
+    <h2>👩‍💻 Login do Admin</h2>
+    <input type="password" id="senhaAdmin" placeholder="Senha">
+    <button onclick="loginAdmin()">Entrar</button>
+    <p id="loginMsg"></p>
+  </div>
+
+  <!-- Admin -->
+  <div class="admin-section" style="display:none;">
+    <h2>Adicionar Comércio/Serviço</h2>
+    <input type="text" id="bairro" placeholder="Bairro">
+    <input type="text" id="nome" placeholder="Nome do comércio/serviço">
+    <input type="text" id="categoria" placeholder="Categoria">
+    <input type="text" id="contato" placeholder="Contato">
+    <input type="text" id="lat" placeholder="Latitude">
+    <input type="text" id="lng" placeholder="Longitude">
+    <button onclick="adicionar()">Adicionar</button>
+  </div>
+</div>
+
+
+  <script>
+    // Senha do admin
+const senha = "admin123"; // você pode mudar
+
+// Dados iniciais
+let base = [
+  { "bairro":"Centro", "nome":"Supermercado Boa Vista","categoria":"Mercado","contato":"11 99999-9999","lat":-23.508,"lng":-46.847 },
+  { "bairro":"Tamboré", "nome":"Academia Vida Saudável","categoria":"Academia","contato":"11 98888-8888","lat":-23.505,"lng":-46.851 },
+  { "bairro":"Fazendinha","nome":"Padaria Pão Quente","categoria":"Padaria","contato":"11 97777-7777","lat":-23.510,"lng":-46.845 },
+  { "bairro":"Vila Paiva","nome":"Farmácia Saúde Total","categoria":"Saúde","contato":"11 96666-6666","lat":-23.512,"lng":-46.849 },
+  { "bairro":"Jardim Maria Helena","nome":"Mercado Popular","categoria":"Mercado","contato":"11 95555-5555","lat":-23.507,"lng":-46.848 }
+];
+
+// Carregar do LocalStorage
+if(localStorage.getItem("meuBairroDB")) base = JSON.parse(localStorage.getItem("meuBairroDB"));
+
+// Login admin
+function loginAdmin() {
+  const inputSenha = document.getElementById("senhaAdmin").value;
+  if(inputSenha === senha){
+    document.querySelector(".admin-section").style.display="block";
+    document.querySelector(".admin-login").style.display="none";
+    alert("✅ Login bem-sucedido!");
+  } else {
+    document.getElementById("loginMsg").innerText="Senha incorreta!";
+  }
+}
+
+// Adicionar comércio
+function adicionar(){
+  const bairro = document.getElementById("bairro").value.trim();
+  const nome = document.getElementById("nome").value.trim();
+  const categoria = document.getElementById("categoria").value.trim();
+  const contato = document.getElementById("contato").value.trim();
+  const lat = parseFloat(document.getElementById("lat").value.trim());
+  const lng = parseFloat(document.getElementById("lng").value.trim());
+
+  if(!bairro || !nome || !lat || !lng){
+    alert("Preencha bairro, nome, latitude e longitude!");
+    return;
+  }
+
+  base.push({bairro,nome,categoria,contato,lat,lng});
+  localStorage.setItem("meuBairroDB",JSON.stringify(base));
+  alert("✅ Comércio adicionado!");
+  document.getElementById("bairro").value="";
+  document.getElementById("nome").value="";
+  document.getElementById("categoria").value="";
+  document.getElementById("contato").value="";
+  document.getElementById("lat").value="";
+  document.getElementById("lng").value="";
+}
+
+// Buscar comércio
+function buscar(){
+  const bairroBusca = document.getElementById("bairroBusca").value.trim().toLowerCase();
+  const resultadosDiv = document.getElementById("resultados");
+  resultadosDiv.innerHTML="";
+
+  if(!bairroBusca){
+    alert("Digite um bairro!");
+    return;
+  }
+
+  const encontrados = base.filter(item=>item.bairro.toLowerCase()===bairroBusca);
+  if(encontrados.length===0){
+    resultadosDiv.innerHTML="<p>Nenhum comércio encontrado neste bairro.</p>";
+  } else {
+    encontrados.forEach(item=>{
+      resultadosDiv.innerHTML += `
+      <div class="result">
+        <strong>${item.nome}</strong><br>
+        Categoria: ${item.categoria || "Não informada"}<br>
+        Contato: ${item.contato || "Não informado"}<br>
+        <iframe src="https://www.google.com/maps?q=${item.lat},${item.lng}&hl=es;z=14&output=embed"></iframe>
+      </div>`;
+    });
+  }
+}
+
+  </script>
+</body>
+</html>
